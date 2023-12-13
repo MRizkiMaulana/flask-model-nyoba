@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
-import tensorflow as tf
 from keras.models import load_model
+import tensorflow as tf
+import tensorflow_hub as hub
 import numpy as np
 from PIL import Image
 from keras.preprocessing import image
@@ -8,7 +9,10 @@ from keras.preprocessing import image
 app = Flask(__name__)
 
 # Load the pre-trained Keras model
-model = load_model('Batik_mobilenet.h5')
+hub.KerasLayer(hub.load("tf_hub_saved_model"))
+my_reloaded_model = tf.keras.models.load_model(
+       'Batik_mobilenet.h5', custom_objects={'KerasLayer': hub.KerasLayer}
+    )
 
 # Function to preprocess an image for the model
 def preprocess_image(img_path):
@@ -45,6 +49,7 @@ def predict():
         result = f"Predicted class: {prediction}"
 
         return render_template('result.html', result=result)
+        
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=3000)
